@@ -24,7 +24,7 @@ class Speeder:
     def check(self):
         if 330 <= self.x <= -self.width + 370:
             print(3)
-        elif 290 <= self.x <= -self.width + 410:
+        elif 270 <= self.x <= -self.width + 430:
             print(2)
         else:
             print(1)
@@ -39,8 +39,8 @@ FPS = 60
 t = 1 / FPS
 s = Speeder()
 while not finished:
-    rect(screen, (0, 0, 255), (50, 200, 600, 50))
-    rect(screen, (0, 255, 0), (290, 200, 120, 50))
+    rect(screen, (255, 238, 0), (50, 200, 600, 50))
+    rect(screen, (255, 162, 0), (270, 200, 160, 50))
     rect(screen, (255, 0, 0), (330, 200, 40, 50))
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
