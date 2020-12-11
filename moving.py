@@ -1,6 +1,7 @@
 import pygame
 from pygame.draw import *
 from random import randint
+from shoot import *
 
 
 class Skier:
@@ -11,13 +12,17 @@ class Skier:
         self.a = 10
         self.ax = -0.5
         self.g = 50
-        self.speed_x = 20
+        self.speed_x = 500
         self.speed_y = 0
 
     def speed(self, k, upfactor):
-        self.speed_x *= k
-        if upfactor:
+        if self.speed_x >= 35 and k > 1:
+            if upfactor and self.speed_y <= 35:
+                self.speed_y *= k
+        else:
             self.speed_x *= k
+            if upfactor and self.speed_y <= 35:
+                self.speed_y *= k
 
     def forward(self, dt, fallfactor, upfactor):
         self.speed_x += self.ax * dt
@@ -28,17 +33,13 @@ class Skier:
         elif upfactor:
             self.x -= self.speed_x * dt
             self.speed_y = -30
-            self.speed_x = 10
             self.y += self.speed_y * dt
         rect(screen, (255, 255, 255), (int(self.x), int(self.y), self.a, self.a))
 
     def jump(self, dt):
-        k = self.speed_y
         self.speed_y = -5
-        print(self.y)
         self.y += self.speed_y * dt
-        print(self.y)
-        self.speed_y = k
+        self.speed_y = 0
         rect(screen, (255, 255, 255), (int(self.x), int(self.y), self.a, self.a))
 
     def control(self, x, y):
@@ -46,7 +47,9 @@ class Skier:
             k = (y[1] - y[0]) / (x[1] - x[0])
             b = y[0] - k * x[0]
             if k > 0:
-                self.ax = 0
+                self.ax = -0.01
+            else:
+                self.ax = -1
             if (self.y + self.a) - k * self.x - b < 0:
                 u = False
                 f = True
@@ -65,9 +68,9 @@ class Skier:
             k = (y[1] - y[2]) / (x[1] - x[2])
             b = y[1] - k * x[1]
             if k > 0:
-                self.ax = 0
+                self.ax = -0.01
             else:
-                self.ax = -0.1
+                self.ax = -1
             if (self.y + self.a) - k * self.x - b < 0:
                 u = False
                 f = True
@@ -86,9 +89,9 @@ class Skier:
             k = (y[3] - y[2]) / (x[3] - x[2])
             b = y[2] - k * x[2]
             if k > 0:
-                self.ax = 0
+                self.ax = -0.01
             else:
-                self.ax = -0.1
+                self.ax = -1
             if (self.y + self.a) - k * self.x - b < 0:
                 u = False
                 f = True
@@ -120,7 +123,7 @@ class Skier:
             return False
 
     def speedchecker(self):
-        print(self.speed_x, self.ax)
+        print(self.speed_x, self.speed_y, self.ax)
 
 
 class Track:
@@ -161,7 +164,7 @@ class Speeder:
         self.y = y
         self.width = l_1
         self.high = l_2
-        self.speed = 120
+        self.speed = 1000
 
     def draw(self):
         rect(screen, (255, 255, 255), (int(self.x), self.y, self.width, self.high))
@@ -183,13 +186,12 @@ class Speeder:
 
 
 pygame.init()
-
 screen = pygame.display.set_mode((800, 800))
 clock = pygame.time.Clock()
 finished = False
 FPS = 60
 t = 1 / FPS
-T = 1
+T = 2
 skier1 = Skier()
 track = Track()
 n = Speeder()
@@ -202,6 +204,13 @@ coord_y = []
 p = 0
 coord_x = track.coord_x()
 coord_y = track.coord_y()
+
+finish = False
+count = 0
+ammo = 15
+time = 0
+scatter = 2000
+
 while not finished:
     rect(screen, (255, 238, 0), (50, 330, 600, 50))
     rect(screen, (255, 162, 0), (270, 330, 160, 50))
@@ -227,6 +236,8 @@ while not finished:
     skier1.forward(t, fall, up)
     checker = skier1.end()
     if checker:
+        circle(finish, time, scatter, ammo, count)
+        finish = False
         track.__init__()
         coord_x = track.coord_x()
         coord_y = track.coord_y()
