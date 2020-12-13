@@ -3,6 +3,9 @@ from pygame.draw import *
 from random import randint
 from shoot import *
 
+"""ski = pygame.image.load(ski1.png)
+skisurf = pygame.Surface((10, 10), pygame.SRCALPHA)"""
+
 
 class Skier:
 
@@ -109,7 +112,7 @@ class Track:
 
     def draw(self, l):
         for i in range(l + 3):
-            polygon(screen, (0, 255, 255), ((self.x[i], self.y[i]), (self.x[i + 1], self.y[i + 1]),
+            polygon(screen, CYAN, ((self.x[i], self.y[i]), (self.x[i + 1], self.y[i + 1]),
                                           (self.x[i + 1], 400), (self.x[i], 400)))
 
     def coefficient(self, l):
@@ -156,10 +159,14 @@ class Speeder:
         else:
             return 0.9
 
+"""def time():
+    pygame.time.get_ticks()"""
+
 
 pygame.init()
 screen = pygame.display.set_mode((800, 800))
 clock = pygame.time.Clock()
+ski_surface = pygame.Surface((50, 60), pygame.SRCALPHA)  # попытка сделать так, чтобы лыжник поворачивался по склону
 finished = False
 FPS = 60
 t = 1 / FPS
@@ -170,15 +177,16 @@ up = False
 checker = False
 x = [False, False]
 p = 0
-
-tx = []  # набор координат x трассы
-ty = []  # набор координат y трассы
+track_counter = 0
+r = []
+final = 0
 
 finish = False
 count = 0
 ammo = 15
 time = 0
 scatter = 2000
+timing = 500
 
 level = int(input("Введите уровень сложности от 1 до 3"))
 level *= 4
@@ -187,12 +195,16 @@ level *= 4
 skier1 = Skier()
 track = Track()
 n = Speeder()
-c_x = track.coord_x()
-c_y = track.coord_y()
+c_x = track.coord_x()  # набор координат x трассы
+c_y = track.coord_y()  # набор координат y трассы
 k, b = track.coefficient(level)
+
 text1 = pygame.font.Font(None, 50)
+text3 = pygame.font.Font(None, 50)
+text5 = pygame.font.Font(None, 50)
 
 while not finished:
+    rect(screen, (0, 0, 255), (0, 0, 800, 400))
     rect(screen, (255, 238, 0), (50, 430, 600, 50))
     rect(screen, (255, 162, 0), (270, 430, 160, 50))
     rect(screen, (255, 0, 0), (330, 430, 40, 50))
@@ -219,17 +231,27 @@ while not finished:
     skier1.forward(t, fall, up)
     checker = skier1.end()
     if checker:
-        shooting(finish, time, scatter, ammo, count)
+        r = shooting(finish, time, scatter, ammo, count)
+        timing -= r[1]
+        final += r[0]
         finish = False
         track.__init__()
+        track_counter += 1
         k, b = track.coefficient(level)
         c_x = track.coord_x()
         c_y = track.coord_y()
     pygame.display.update()
     screen.fill((0, 0, 0))
     u = skier1.text()
+    timing -= 1 / FPS
     text = 'Скорость: ' + str("%.2f" % u)
+    text_n = 'Количество пройденных участков: ' + str(track_counter)
+    text_t = 'Осталось времени: ' + str(int(timing))
     text2 = text1.render(text, True, WHITE, BLACK)
+    text4 = text3.render(text_n, True, WHITE, BLACK)
+    text6 = text5.render(text_t, True, WHITE, BLACK)
     screen.blit(text2, (50, 550))
+    screen.blit(text4, (50, 600))
+    screen.blit(text6, (50, 650))
 
 pygame.quit()

@@ -139,8 +139,7 @@ def shooting(finish, time, scatter, ammo, count):
 
         pygame.display.update()
         clock.tick(FPS)
-    print(int(count))
-    print(time / 30)
+    return int(count), int(time / 30)
 
 
 if __name__ == "__main__":
