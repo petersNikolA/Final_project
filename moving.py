@@ -6,19 +6,29 @@ from shoot import *
 
 class Skier:
 
-    def __init__(self, x=50, y=50):
-        self.x = x
-        self.y = y
+    def __init__(self, x_0=50, y_0=60):
         self.a = 10
+        self.x = x_0
+        self.y = y_0 - self.a
         self.ax = -0.5
-        self.g = 50
-        self.speed_x = 500
+        self.g = 75
+        self.speed_x = 0
         self.speed_y = 0
+        self.u = False
+        self.f = False
 
     def speed(self, k, upfactor):
-        if self.speed_x >= 35 and k > 1:
+        if self.speed_x <= 2:
+            if k > 0:
+                self.speed_x += 1
+            else:
+                self.speed_x = 2
+        elif self.speed_x >= 20 and k > 1:
+            self.speed_x = 20
             if upfactor and self.speed_y <= 35:
                 self.speed_y *= k
+        elif self.speed_x >= 10 and k > 1:
+            self.speed_x += 1
         else:
             self.speed_x *= k
             if upfactor and self.speed_y <= 35:
@@ -37,124 +47,83 @@ class Skier:
         rect(screen, (255, 255, 255), (int(self.x), int(self.y), self.a, self.a))
 
     def jump(self, dt):
-        self.speed_y = -5
+        self.speed_y = -7
         self.y += self.speed_y * dt
         self.speed_y = 0
         rect(screen, (255, 255, 255), (int(self.x), int(self.y), self.a, self.a))
 
-    def control(self, x, y):
-        if x[0] < self.x <= x[1]:
-            k = (y[1] - y[0]) / (x[1] - x[0])
-            b = y[0] - k * x[0]
-            if k > 0:
-                self.ax = -0.01
-            else:
-                self.ax = -1
-            if (self.y + self.a) - k * self.x - b < 0:
-                u = False
-                f = True
-                return f, u
-            elif (self.y + self.a) - k * self.x - b > 2:
-                self.speed_y = 0
-                u = True
-                f = False
-                return f, u
-            else:
-                self.speed_y = 0
-                u = False
-                f = False
-                return f, u
-        elif x[1] < self.x <= x[2]:
-            k = (y[1] - y[2]) / (x[1] - x[2])
-            b = y[1] - k * x[1]
-            if k > 0:
-                self.ax = -0.01
-            else:
-                self.ax = -1
-            if (self.y + self.a) - k * self.x - b < 0:
-                u = False
-                f = True
-                return f, u
-            elif (self.y + self.a) - k * self.x - b > 2:
-                self.speed_y = 0
-                u = True
-                f = False
-                return f, u
-            else:
-                self.speed_y = 0
-                u = False
-                f = False
-                return f, u
-        elif x[2] < self.x <= x[3]:
-            k = (y[3] - y[2]) / (x[3] - x[2])
-            b = y[2] - k * x[2]
-            if k > 0:
-                self.ax = -0.01
-            else:
-                self.ax = -1
-            if (self.y + self.a) - k * self.x - b < 0:
-                u = False
-                f = True
-                return f, u
-            elif (self.y + self.a) - k * self.x - b > 2:
-                self.speed_y = 0
-                u = True
-                f = False
-                return f, u
-            else:
-                self.speed_y = 0
-                u = False
-                f = False
-                return f, u
-        else:
-            self.speed_y = 0
-            u = False
-            f = False
-            return f, u
+    def control(self, x, l, k, b):
+        for i in range(l + 3):
+            if x[i] < self.x <= x[i + 1]:
+                if k[i] > 0:
+                    self.ax = -0.1
+                else:
+                    self.ax = -0.3
+                if (self.y + self.a) - k[i] * self.x - b[i] < 0:
+                    self.u = False
+                    self.f = True
+                elif (self.y + self.a) - k[i] * self.x - b[i] > 2:
+                    self.speed_y = 0
+                    self.u = True
+                    self.f = False
+                else:
+                    self.speed_y = 0
+                    self.u = False
+                    self.f = False
+
+    def checker(self):
+        return self.u, self.f
 
     def end(self):
-        if self.x + self.a >= 700:
+        if self.x + self.a >= 775:
             self.x = 50
             self.y = 50
-            self.speed_x = 20
-            self.speed_y = 0
             return True
         else:
             return False
 
     def speedchecker(self):
-        print(self.speed_x, self.speed_y, self.ax)
+        if self.speed_x <= 0:
+            self.speed_x = 0
+
+    def text(self):
+        return self.speed_x
 
 
 class Track:
 
-    # тут можно сделать генерацию x и y циклом с количеством иттераций в зависимости от уровня сложности при помощи
-    # массива но сначала хочется разобраться на простом и потом усложнить
-    def __init__(self, x=50, y=60):
-        self.x = x
-        self.y = y
-        self.x1 = self.x
-        self.x2 = randint(150, 250)
-        self.x3 = randint(350, 500)
-        self.x4 = 700
-        self.y1 = self.y
-        self.y2 = randint(60, 70)
-        self.y3 = randint(self.y2 + 30, 250)
-        self.y4 = randint(50, self.y3 + 40)
-        """
-        for i in range(level):
+    def __init__(self, x_0=50, y_0=60):
+        l = level
+        self.x = [x_0, x_0 + 50]
+        self.y = [y_0, y_0]
+        for i in range(l):
+            self.x.append(self.x[i + 1] + 600 // l)
+            self.y.append(randint(60, 250))
+        self.x.append(self.x[l + 1] + 50)
+        self.x.append(self.x[l + 2] + 25)
+        self.y.append(y_0)
+        self.y.append(y_0)
 
-        """
+    def draw(self, l):
+        for i in range(l + 3):
+            polygon(screen, (255, 0, 0), ((self.x[i], self.y[i]), (self.x[i + 1], self.y[i + 1]),
+                                          (self.x[i + 1], 300), (self.x[i], 300)))
 
-    def draw(self):
-        polygon(screen, (255, 0, 0), ((self.x1, 300), (self.x1, self.y1), (self.x2, self.y2),
-                                      (self.x3, self.y3), (self.x4, self.y4), (self.x4, 300)))
+    def coefficient(self, l):
+        coef1 = []
+        coef2 = []
+        for i in range(l + 3):
+            k = (self.y[i + 1] - self.y[i]) / (self.x[i + 1] - self.x[i])
+            coef1.append(k)
+            b = self.y[i] - k * self.x[i]
+            coef2.append(b)
+        return coef1, coef2
 
     def coord_x(self):
-        return self.x1, self.x2, self.x3, self.x4
+        return self.x
 
     def coord_y(self):
-        return self.y1, self.y2, self.y3, self.y4
+        return self.y
 
 
 class Speeder:
@@ -178,9 +147,9 @@ class Speeder:
 
     def check(self):
         if 330 <= self.x <= -self.width + 370:
-            return 1.15
+            return 1.3
         elif 270 <= self.x <= -self.width + 430:
-            return 1.1
+            return 1.2
         else:
             return 0.9
 
@@ -192,24 +161,30 @@ finished = False
 FPS = 60
 t = 1 / FPS
 T = 2
-skier1 = Skier()
-track = Track()
-n = Speeder()
+
 fall = False
 up = False
 checker = False
-x = []
-coord_x = []
-coord_y = []
+x = [False, False]
 p = 0
-coord_x = track.coord_x()
-coord_y = track.coord_y()
+
+tx = []  # набор координат x трассы
+ty = []  # набор координат y трассы
 
 finish = False
 count = 0
 ammo = 15
 time = 0
 scatter = 2000
+level = 6
+
+skier1 = Skier()
+track = Track()
+n = Speeder()
+c_x = track.coord_x()
+c_y = track.coord_y()
+k, b = track.coefficient(level)
+text1 = pygame.font.Font(None, 50)
 
 while not finished:
     rect(screen, (255, 238, 0), (50, 330, 600, 50))
@@ -227,21 +202,28 @@ while not finished:
                 skier1.jump(T)
             if event.key == pygame.K_SPACE:
                 p = n.check()
-                skier1.speed(p, up)
                 skier1.speedchecker()
-    track.draw()
-    x = skier1.control(coord_x, coord_y)
-    fall = x[0]
-    up = x[1]
+                skier1.speed(p, up)
+    track.draw(level)
+    skier1.control(c_x, level, k, b)
+    x = skier1.checker()
+    skier1.speedchecker()
+    up = x[0]
+    fall = x[1]
     skier1.forward(t, fall, up)
     checker = skier1.end()
     if checker:
-        circle(finish, time, scatter, ammo, count)
+        shooting(finish, time, scatter, ammo, count)
         finish = False
         track.__init__()
-        coord_x = track.coord_x()
-        coord_y = track.coord_y()
+        k, b = track.coefficient(level)
+        c_x = track.coord_x()
+        c_y = track.coord_y()
     pygame.display.update()
     screen.fill((0, 0, 0))
+    u = skier1.text()
+    text = 'Скорость: ' + str("%.2f" % u)
+    text2 = text1.render(text, True, WHITE, BLACK)
+    screen.blit(text2, (50, 550))
 
 pygame.quit()

@@ -3,7 +3,7 @@ import pygame
 from pygame.draw import *
 import random
 
-pygame.init()
+
 screen = pygame.display.set_mode((800, 800))
 FPS = 30
 width = 800
@@ -53,8 +53,8 @@ class Ball:
     def show_ball(self):
         screen.blit(self.surf, self.ballrect)
 
-    def shot(self):
-        mouse_pos = [event.pos[0] + (wind * (500 - event.pos[1]) / 30 + random.randint(-1 * scatter, scatter) / 100),
+    def shot(self, event):
+        mouse_pos = [event.pos[0] + (wind * (800 - event.pos[1]) / 30 + random.randint(-1 * scatter, scatter) / 100),
                      event.pos[1] + random.randint(-1 * scatter, scatter) / 100]
         distance = math.sqrt((self.x - mouse_pos[0]) ** 2 + (self.y - mouse_pos[1]) ** 2)
         if (distance < self.r) and (distance > self.r * 2 / 3):
@@ -83,12 +83,12 @@ clock = pygame.time.Clock()
 finish = False
 
 
-def circle(finish, time, scatter, ammo, count):
+def shooting(finish, time, scatter, ammo, count):
     while not finish:
         screen.fill(BLACK)
         # BACKGROUND
-        rect(screen, BLUE, (0, 0, 700, 500))
-        rect(screen, CYAN, (0, 200, 700, 500))
+        rect(screen, BLUE, (0, 0, 800, 800))
+        rect(screen, CYAN, (0, 200, 800, 800))
         rect(screen, WHITE, (250, 50, 200, 200))
         polygon(screen, RED, ((200, 50), (200, 60), ((200 + wind * 15), 55)))
         polygon(screen, YELLOW, ((200, 70), (200, 80), ((200 + scatter / 10), 75)))
@@ -110,11 +110,11 @@ def circle(finish, time, scatter, ammo, count):
                     finish = True
                 else:
                     for i in balls:
-                        if i.shot()[0]:
+                        if i.shot(event)[0]:
                             balls.remove(i)
                             i = Ball(350, 150)
                             balls.append(i)
-                            count += i.shot()[1]
+                            count += i.shot(event)[1]
                     ammo -= 1
                     if scatter < 4000:
                         scatter += 1000
@@ -139,7 +139,6 @@ def circle(finish, time, scatter, ammo, count):
 
         pygame.display.update()
         clock.tick(FPS)
-    pygame.quit()
     print(int(count))
     print(time / 30)
 
