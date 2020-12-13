@@ -6,7 +6,7 @@ from shoot import *
 
 class Skier:
 
-    def __init__(self, x_0=50, y_0=60):
+    def __init__(self, x_0=50, y_0=160):
         self.a = 10
         self.x = x_0
         self.y = y_0 - self.a
@@ -28,7 +28,10 @@ class Skier:
             if upfactor and self.speed_y <= 35:
                 self.speed_y *= k
         elif self.speed_x >= 10 and k > 1:
-            self.speed_x += 1
+            if k == 1.3:
+                self.speed_x += 1
+            else:
+                self.speed_x += 0.5
         else:
             self.speed_x *= k
             if upfactor and self.speed_y <= 35:
@@ -55,14 +58,14 @@ class Skier:
     def control(self, x, l, k, b):
         for i in range(l + 3):
             if x[i] < self.x <= x[i + 1]:
-                if k[i] > 0:
+                if k[i] >= 0:
                     self.ax = -0.1
                 else:
-                    self.ax = -0.3
+                    self.ax = -0.3 * abs(k[i])
                 if (self.y + self.a) - k[i] * self.x - b[i] < 0:
                     self.u = False
                     self.f = True
-                elif (self.y + self.a) - k[i] * self.x - b[i] > 2:
+                elif (self.y + self.a) - k[i] * self.x - b[i] > 1:
                     self.speed_y = 0
                     self.u = True
                     self.f = False
@@ -77,7 +80,7 @@ class Skier:
     def end(self):
         if self.x + self.a >= 775:
             self.x = 50
-            self.y = 50
+            self.y = 150
             return True
         else:
             return False
@@ -92,13 +95,13 @@ class Skier:
 
 class Track:
 
-    def __init__(self, x_0=50, y_0=60):
+    def __init__(self, x_0=50, y_0=160):
         l = level
         self.x = [x_0, x_0 + 50]
         self.y = [y_0, y_0]
         for i in range(l):
             self.x.append(self.x[i + 1] + 600 // l)
-            self.y.append(randint(60, 250))
+            self.y.append(randint(60, 300))
         self.x.append(self.x[l + 1] + 50)
         self.x.append(self.x[l + 2] + 25)
         self.y.append(y_0)
@@ -106,8 +109,8 @@ class Track:
 
     def draw(self, l):
         for i in range(l + 3):
-            polygon(screen, (255, 0, 0), ((self.x[i], self.y[i]), (self.x[i + 1], self.y[i + 1]),
-                                          (self.x[i + 1], 300), (self.x[i], 300)))
+            polygon(screen, (0, 255, 255), ((self.x[i], self.y[i]), (self.x[i + 1], self.y[i + 1]),
+                                          (self.x[i + 1], 400), (self.x[i], 400)))
 
     def coefficient(self, l):
         coef1 = []
@@ -128,7 +131,7 @@ class Track:
 
 class Speeder:
 
-    def __init__(self, x=50, y=330, l_1=20, l_2=50):
+    def __init__(self, x=50, y=430, l_1=20, l_2=50):
         self.x = x
         self.y = y
         self.width = l_1
@@ -176,7 +179,10 @@ count = 0
 ammo = 15
 time = 0
 scatter = 2000
-level = 6
+
+level = int(input("Введите уровень сложности от 1 до 3"))
+level *= 4
+
 
 skier1 = Skier()
 track = Track()
@@ -187,9 +193,9 @@ k, b = track.coefficient(level)
 text1 = pygame.font.Font(None, 50)
 
 while not finished:
-    rect(screen, (255, 238, 0), (50, 330, 600, 50))
-    rect(screen, (255, 162, 0), (270, 330, 160, 50))
-    rect(screen, (255, 0, 0), (330, 330, 40, 50))
+    rect(screen, (255, 238, 0), (50, 430, 600, 50))
+    rect(screen, (255, 162, 0), (270, 430, 160, 50))
+    rect(screen, (255, 0, 0), (330, 430, 40, 50))
     n.move(t)
     n.draw()
     n.control()
