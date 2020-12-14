@@ -64,7 +64,7 @@ class Skier:
                 if k[i] >= 0:
                     self.ax = -0.1
                 else:
-                    self.ax = -0.3 * abs(k[i])
+                    self.ax = -0.25 * abs(k[i]) * (l // 4)
                 if (self.y + self.a) - k[i] * self.x - b[i] < 0:
                     self.u = False
                     self.f = True
