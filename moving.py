@@ -113,7 +113,7 @@ class Track:
     def draw(self, l):
         for i in range(l + 3):
             polygon(screen, CYAN, ((self.x[i], self.y[i]), (self.x[i + 1], self.y[i + 1]),
-                                          (self.x[i + 1], 400), (self.x[i], 400)))
+                                   (self.x[i + 1], 400), (self.x[i], 400)))
 
     def coefficient(self, l):
         coef1 = []
@@ -159,9 +159,6 @@ class Speeder:
         else:
             return 0.9
 
-"""def time():
-    pygame.time.get_ticks()"""
-
 
 pygame.init()
 screen = pygame.display.set_mode((800, 800))
@@ -187,10 +184,15 @@ ammo = 15
 time = 0
 scatter = 2000
 timing = 500
+factor = False
 
+first = pygame.font.Font(None, 50)
+f_text = "Ввод в консоль"
+ffirst = first.render(f_text, True, WHITE, BLACK)
+screen.blit(ffirst, (50, 100))
+pygame.display.update()
 level = int(input("Введите уровень сложности от 1 до 3"))
 level *= 4
-
 
 skier1 = Skier()
 track = Track()
@@ -202,56 +204,83 @@ k, b = track.coefficient(level)
 text1 = pygame.font.Font(None, 50)
 text3 = pygame.font.Font(None, 50)
 text5 = pygame.font.Font(None, 50)
-
+rules1 = pygame.font.Font(None, 30)
+rules2 = pygame.font.Font(None, 30)
+rules3 = pygame.font.Font(None, 30)
+rules4 = pygame.font.Font(None, 30)
+rule1 = 'Во время игры при нажатии пробела лыжник ускоряется'
+rule2 = 'При нажатии стрелки вверх - прыжок'
+rule3 = 'Для начала игры нажмите tab'
+rule4 = 'Для выхода нажмите esc'
 while not finished:
-    rect(screen, (0, 0, 255), (0, 0, 800, 400))
-    rect(screen, (255, 238, 0), (50, 430, 600, 50))
-    rect(screen, (255, 162, 0), (270, 430, 160, 50))
-    rect(screen, (255, 0, 0), (330, 430, 40, 50))
-    n.move(t)
-    n.draw()
-    n.control()
-    clock.tick(FPS)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            finished = True
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP:
-                skier1.jump(T)
-            if event.key == pygame.K_SPACE:
-                p = n.check()
-                skier1.speedchecker()
-                skier1.speed(p, up)
-    track.draw(level)
-    skier1.control(c_x, level, k, b)
-    x = skier1.checker()
-    skier1.speedchecker()
-    up = x[0]
-    fall = x[1]
-    skier1.forward(t, fall, up)
-    checker = skier1.end()
-    if checker:
-        r = shooting(finish, time, scatter, ammo, count)
-        timing -= r[1]
-        final += r[0]
-        finish = False
-        track.__init__()
-        track_counter += 1
-        k, b = track.coefficient(level)
-        c_x = track.coord_x()
-        c_y = track.coord_y()
     pygame.display.update()
-    screen.fill((0, 0, 0))
-    u = skier1.text()
-    timing -= 1 / FPS
-    text = 'Скорость: ' + str("%.2f" % u)
-    text_n = 'Количество пройденных участков: ' + str(track_counter)
-    text_t = 'Осталось времени: ' + str(int(timing))
-    text2 = text1.render(text, True, WHITE, BLACK)
-    text4 = text3.render(text_n, True, WHITE, BLACK)
-    text6 = text5.render(text_t, True, WHITE, BLACK)
-    screen.blit(text2, (50, 550))
-    screen.blit(text4, (50, 600))
-    screen.blit(text6, (50, 650))
+    rect(screen, BLACK, (0, 0, 800, 800))
+    rules11 = rules1.render(rule1, True, WHITE, BLACK)
+    rules22 = rules2.render(rule2, True, WHITE, BLACK)
+    rules33 = rules3.render(rule3, True, WHITE, BLACK)
+    rules44 = rules4.render(rule4, True, WHITE, BLACK)
+    screen.blit(rules11, (50, 100))
+    screen.blit(rules22, (50, 150))
+    screen.blit(rules33, (50, 200))
+    screen.blit(rules44, (50, 250))
+    for event in pygame.event.get():
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_TAB:
+                factor = True
+            elif event.key == pygame.K_ESCAPE:
+                finished = True
+        elif event.type == pygame.QUIT:
+            finished = True
+    if factor:
+        while not finished:
+            rect(screen, (0, 0, 255), (0, 0, 800, 400))
+            rect(screen, (255, 238, 0), (50, 430, 600, 50))
+            rect(screen, (255, 162, 0), (270, 430, 160, 50))
+            rect(screen, (255, 0, 0), (330, 430, 40, 50))
+            n.move(t)
+            n.draw()
+            n.control()
+            clock.tick(FPS)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    finished = True
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_UP:
+                        skier1.jump(T)
+                    if event.key == pygame.K_SPACE:
+                        p = n.check()
+                        skier1.speedchecker()
+                        skier1.speed(p, up)
+            track.draw(level)
+            skier1.control(c_x, level, k, b)
+            x = skier1.checker()
+            skier1.speedchecker()
+            up = x[0]
+            fall = x[1]
+            skier1.forward(t, fall, up)
+            checker = skier1.end()
+            if checker:
+                r = shooting(finish, time, scatter, ammo, count)
+                timing -= r[1]
+                final += r[0]
+                finish = False
+                track.__init__()
+                track_counter += 1
+                k, b = track.coefficient(level)
+                c_x = track.coord_x()
+                c_y = track.coord_y()
+            pygame.display.update()
+            screen.fill((0, 0, 0))
+            u = skier1.text()
+            timing -= 1 / FPS
+            text = 'Скорость: ' + str("%.2f" % u)
+            text_n = 'Количество пройденных участков: ' + str(track_counter)
+            text_t = 'Осталось времени: ' + str(int(timing))
+            text2 = text1.render(text, True, WHITE, BLACK)
+            text4 = text3.render(text_n, True, WHITE, BLACK)
+            text6 = text5.render(text_t, True, WHITE, BLACK)
+            screen.blit(text2, (50, 550))
+            screen.blit(text4, (50, 600))
+            screen.blit(text6, (50, 650))
 
 pygame.quit()
