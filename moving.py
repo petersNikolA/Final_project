@@ -3,9 +3,6 @@ from pygame.draw import *
 from random import randint
 from shoot import *
 
-"""ski = pygame.image.load(ski1.png)
-skisurf = pygame.Surface((10, 10), pygame.SRCALPHA)"""
-
 
 class Skier:
 
@@ -214,7 +211,7 @@ ammo = 15
 time = 0
 scatter = 2000
 
-timing = 200
+timing = 100
 factor = False
 
 first = pygame.font.Font(None, 50)
@@ -226,8 +223,10 @@ ssecond = second.render(s_text, True, WHITE, BLACK)
 screen.blit(ffirst, (200, 100))
 screen.blit(ssecond, (200, 150))
 pygame.display.update()
-level = int(input("Введите уровень сложности от 1 до 3"))
+print('перед началом игры ознакомтесь с правилами ....')
+level = int(input("Введите уровень сложности от 1 до 3 "))
 level *= 4
+name = str(input("Введите ваше имя. Только латинчкие буквы "))
 
 skier1 = Skier()
 track = Track()
@@ -243,11 +242,11 @@ cloud2.checker()
 text1 = pygame.font.Font(None, 50)
 text3 = pygame.font.Font(None, 50)
 text5 = pygame.font.Font(None, 50)
-rules1 = pygame.font.Font(None, 30)
-rules2 = pygame.font.Font(None, 30)
-rules3 = pygame.font.Font(None, 30)
-rules4 = pygame.font.Font(None, 30)
-rule1 = 'Во время игры при нажатии пробела лыжник ускоряется'
+rules1 = pygame.font.Font(None, 50)
+rules2 = pygame.font.Font(None, 50)
+rules3 = pygame.font.Font(None, 50)
+rules4 = pygame.font.Font(None, 50)
+rule1 = 'Пробел - ускорение лыжника'
 rule2 = 'При нажатии стрелки вверх - прыжок'
 rule3 = 'Для начала игры нажмите tab'
 rule4 = 'Для выхода нажмите esc'
@@ -333,8 +332,10 @@ while not finished:
             screen.blit(text4, (50, 600))
             screen.blit(text6, (50, 650))
             if timing <= 0:
-                final += track_counter * level * 50
-                print(final)
+                final += (track_counter * level * 50)
+                records = open("records.txt", "a")
+                records.write(name + " : " + str(final) + "\n")
+                records.close()
                 finished = True
 
 pygame.quit()
