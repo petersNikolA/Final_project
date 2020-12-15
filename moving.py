@@ -12,10 +12,11 @@ class Skier:
         self.y = y_0 - self.a
         self.ax = -0.5
         self.g = 75
-        self.speed_x = 0
+        self.speed_x = 2
         self.speed_y = 0
         self.u = False
         self.f = False
+        self.w = True
 
     def speed(self, k, upfactor):
         if self.speed_x <= 2:
@@ -45,15 +46,17 @@ class Skier:
             self.y += self.speed_y * dt
         elif upfactor:
             self.x -= self.speed_x * dt
-            self.speed_y = -30
+            self.speed_y = -10
             self.y += self.speed_y * dt
         rect(screen, (255, 0, 0), (int(self.x), int(self.y), self.a, self.a))
 
-    def jump(self, dt):
-        self.speed_y = -7
-        self.y += self.speed_y * dt
-        self.speed_y = 0
-        rect(screen, (255, 255, 255), (int(self.x), int(self.y), self.a, self.a))
+    def jump(self, dt, factor):
+        if factor:
+            self.speed_y = -8
+            self.y += self.speed_y * dt
+            self.x += self.speed_x * dt / (2 * FPS)
+            self.speed_y = 0
+            rect(screen, (255, 255, 255), (int(self.x), int(self.y), self.a, self.a))
 
     def control(self, x, l, k, b):
         for i in range(l + 3):
@@ -65,17 +68,23 @@ class Skier:
                 if (self.y + self.a) - k[i] * self.x - b[i] < 0:
                     self.u = False
                     self.f = True
-                elif (self.y + self.a) - k[i] * self.x - b[i] > 1:
+                    if (self.y + self.a) - k[i] * self.x - b[i] < -5:
+                        self.w = False
+                    else:
+                        self.w = True
+                elif (self.y + self.a * 2 ** (1 / 2)) - k[i] * self.x - b[i] > 0:
                     self.speed_y = 0
                     self.u = True
                     self.f = False
+                    self.w = True
                 else:
                     self.speed_y = 0
                     self.u = False
                     self.f = False
+                    self.w = True
 
     def checker(self):
-        return self.u, self.f
+        return self.u, self.f, self.w
 
     def end(self):
         if self.x + self.a >= 775:
@@ -187,6 +196,12 @@ class Clouds:
             self.x = 800
 
 
+class Boost:
+
+    def __init__(self):
+        pass
+
+
 pygame.init()
 screen = pygame.display.set_mode((800, 800))
 clock = pygame.time.Clock()
@@ -199,7 +214,8 @@ T = 2
 fall = False
 up = False
 checker = False
-x = [False, False]
+x = [False, False, True]
+j_factor = x[2]
 p = 0
 track_counter = 0
 r = []
@@ -216,17 +232,17 @@ factor = False
 
 first = pygame.font.Font(None, 50)
 second = pygame.font.Font(None, 50)
-f_text = "Ввод в консоль"
-s_text = "Это влияет на рельеф"
+f_text = "Обратите внимание на консоль"
+s_text = "Ознакомьтесь с правилами"
 ffirst = first.render(f_text, True, WHITE, BLACK)
 ssecond = second.render(s_text, True, WHITE, BLACK)
-screen.blit(ffirst, (200, 100))
-screen.blit(ssecond, (200, 150))
+screen.blit(ffirst, (100, 100))
+screen.blit(ssecond, (100, 150))
 pygame.display.update()
 print('перед началом игры ознакомтесь с правилами ....')
 level = int(input("Введите уровень сложности от 1 до 3 "))
 level *= 4
-name = str(input("Введите ваше имя. Только латинчкие буквы "))
+name = str(input("Введите ваше имя. Только латинcкие буквы "))
 
 skier1 = Skier()
 track = Track()
@@ -285,7 +301,7 @@ while not finished:
                     finished = True
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_UP:
-                        skier1.jump(T)
+                        j_factor = skier1.jump(T, j_factor)
                     if event.key == pygame.K_SPACE:
                         p = n.check()
                         skier1.speedchecker()
@@ -302,6 +318,7 @@ while not finished:
             skier1.speedchecker()
             up = x[0]
             fall = x[1]
+            j_factor = x[2]
             skier1.forward(t, fall, up)
             checker = skier1.end()
             if checker:
