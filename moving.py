@@ -11,7 +11,7 @@ class Skier:
         self.x = x_0
         self.y = y_0 - self.a
         self.ax = -0.5
-        self.g = 75
+        self.g = 300
         self.speed_x = 2
         self.speed_y = 0
         self.u = False
@@ -63,16 +63,23 @@ class Skier:
             if x[i] < self.x <= x[i + 1]:
                 if k[i] >= 0:
                     self.ax = -0.1
+                    self.g = 300
                 else:
                     self.ax = -0.25 * abs(k[i]) * (l // 4)
-                if (self.y + self.a) - k[i] * self.x - b[i] < 0:
+                    self.g = 15
+                if (self.y + self.a) - k[i] * self.x - b[i] < 1:
                     self.u = False
                     self.f = True
                     if (self.y + self.a) - k[i] * self.x - b[i] < -5:
                         self.w = False
                     else:
                         self.w = True
-                elif (self.y + self.a * 2 ** (1 / 2)) - k[i] * self.x - b[i] > 0:
+                elif k[i] >= 0 and (self.y + self.a / 1.2) - k[i] * self.x - b[i] > 0:
+                    self.speed_y = 0
+                    self.u = True
+                    self.f = False
+                    self.w = True
+                elif k[i] < 0 and (self.y + self.a * 2 ** (1 / 2) - k[i] * self.x - b[i] > 0):
                     self.speed_y = 0
                     self.u = True
                     self.f = False
@@ -100,6 +107,10 @@ class Skier:
 
     def text(self):
         return self.speed_x
+
+    def boost_checker(self, m):
+        if m - 0.1 <= self.x <= m + 0.1:
+            self.speed_x += 2.1
 
 
 class Track:
@@ -199,7 +210,20 @@ class Clouds:
 class Boost:
 
     def __init__(self):
-        pass
+        self.x = randint(100, 750)
+        self.y = 60
+        self.r = 10
+
+    def checker(self, x):
+        for i in range(level + 3):
+            if x[i] - 5 <= self.x <= x[i] + 5:
+                self.x += 20
+
+    def draw(self):
+        circle(screen, (139, 0, 0), (self.x, self.y), self.r)
+
+    def coord(self):
+        return self.x
 
 
 pygame.init()
@@ -254,6 +278,7 @@ cloud1 = Clouds()
 cloud1.checker()
 cloud2 = Clouds()
 cloud2.checker()
+booster = Boost()
 
 text1 = pygame.font.Font(None, 50)
 text3 = pygame.font.Font(None, 50)
@@ -312,6 +337,9 @@ while not finished:
             cloud2.move(t)
             cloud1.control()
             cloud2.control()
+            booster.checker(c_x)
+            booster.draw()
+            b_coord = booster.coord()
             track.draw(level)
             skier1.control(c_x, level, k, b)
             x = skier1.checker()
@@ -320,6 +348,7 @@ while not finished:
             fall = x[1]
             j_factor = x[2]
             skier1.forward(t, fall, up)
+            skier1.boost_checker(b_coord)
             checker = skier1.end()
             if checker:
                 r = shooting(finish, time, scatter, ammo, count)
