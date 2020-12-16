@@ -5,32 +5,40 @@ from shoot import *
 
 
 class Skier:
-    '''
-    class that describes main object - skier and all its movements
-    '''
+    """
+    class for main object - skier
+    """
     def __init__(self, x_0=50, y_0=160):
-        '''
+        """
         :param x_0: horizontal starting position
         :param y_0: vertical starting position
-        '''
-        self.a = 10  # size
+        a - size
+        ax - horizontal acceleration
+        g - vertical acceleration
+        speed_x - horizontal speed
+        speed_y - vertical speed
+        u - upfactor
+        f - fallfactor
+        w - jump_factor
+        """
+        self.a = 10
         self.x = x_0
         self.y = y_0 - self.a
-        self.ax = -0.5  # horizontal acceleration
-        self.g = 300  # vertical acceleration
-        self.speed_x = 2  # horizontal speed
-        self.speed_y = 0  # vertical speed
-        self.u = False  # upfactor
-        self.f = False  # fallfactor
-        self.w = True  # jump_factor
+        self.ax = -0.5
+        self.g = 300
+        self.speed_x = 2
+        self.speed_y = 0
+        self.u = False
+        self.f = False
+        self.w = True
 
     def speed(self, k, upfactor):
-        '''
+        """
         determines speed of skier
-        :param k:
+        :param k: coefficient obtained from speeder
         :param upfactor: factor whether skier needs to climb the hill
         :return: speed
-        '''
+        """
         if self.speed_x <= 2:
             if k > 0:
                 self.speed_x += 1
@@ -51,12 +59,12 @@ class Skier:
                 self.speed_y *= k
 
     def forward(self, dt, fallfactor, upfactor):
-        '''
+        """
         movement of skier
         :param dt: time of movement
         :param fallfactor: factor whether skier needs to go down
         :param upfactor: factor whether skier needs to climb the hill
-        '''
+        """
         self.speed_x += self.ax * dt
         self.x += self.speed_x * dt
         if fallfactor:
@@ -69,26 +77,26 @@ class Skier:
         rect(screen, (255, 0, 0), (int(self.x), int(self.y), self.a, self.a))
 
     def jump(self, dt, factor):
-        '''
+        """
         skier jumping
         :param dt: time of jumping
         :param factor: checking if skier has not jumped yet
-        '''
+        """
         if factor:
             self.speed_y = -16
             self.y += self.speed_y * dt
-            self.x += self.speed_x * 30 * dt / FPS
+            self.x += 2
             self.speed_y = 0
             rect(screen, (255, 255, 255), (int(self.x), int(self.y), self.a, self.a))
 
     def control(self, x, l, k, b):
-        '''
+        """
         makes skier moves along the track
         :param x: track's horizontal coordinates
         :param l: number of track parts
         :param k: coefficient of track's tilt
         :param b: another track coefficient
-        '''
+        """
         for i in range(l + 3):
             if x[i] < self.x <= x[i + 1]:
                 if k[i] >= 0:
@@ -124,17 +132,17 @@ class Skier:
                     self.w = True
 
     def checker(self):
-        '''
+        """
         checks whether skier needs to climb up or go down, or can jump
         :return: upfactor, fallfactor, jump_factor
-        '''
+        """
         return self.u, self.f, self.w
 
     def end(self):
-        '''
+        """
         check if skier has finished part of the track
         :return: True if skier has finished otherwise False
-        '''
+        """
         if self.x + self.a >= 775:
             self.x = 50
             self.y = 150
@@ -143,54 +151,56 @@ class Skier:
             return False
 
     def speedchecker(self):
-        '''
+        """
         limits speed so that skier won't go back
         :return: new speed value
-        '''
+        """
         if self.speed_x <= 0:
             self.speed_x = 2
 
     def text(self):
-        '''
+        """
         :return: skier's speed
-        '''
+        """
         return self.speed_x
 
     def boost_checker(self, m):
-        '''
+        """
         checks if skier has riched booster
         :param m: True if skier had riched otherwise False
         :return: new speed value
-        '''
+        """
         if m - 0.1 <= self.x <= m + 0.1:
             self.speed_x += 2.1
 
     def coords_obstacle(self):
-        '''
+        """
         :return: skier's coordinates
-        '''
+        """
         return self.x, self.y
 
     def ob_checker(self, ob_factor):
-        '''
+        """
         checks if skier has collided obstacle
         :param ob_factor: True if skier had collided obstacle otherwise False
         :return: new speed value
-        '''
+        """
         if ob_factor:
             self.speed_x -= 1
 
 
 class Track:
-    '''
+    """
     class that describes the track on which skier moves
-    '''
+    """
     def __init__(self, x_0=50, y_0=160):
-        '''
+        """
         randomly generates coordinates of track
         :param x_0: zero horizontal position
         :param y_0: zero vertical position
-        '''
+        x - array of horizontal coordinates
+        y - array of vertical coordinates
+        """
         l = level
         self.x = [x_0, x_0 + 50]
         self.y = [y_0, y_0]
@@ -203,28 +213,28 @@ class Track:
         self.y.append(y_0)
 
     def draw(self, l):
-        '''
+        """
         draws track on screen
         :param l: number of track parts
-        '''
+        """
         for i in range(l + 3):
             polygon(screen, CYAN, ((self.x[i], self.y[i]), (self.x[i + 1], self.y[i + 1]),
                                    (self.x[i + 1], 400), (self.x[i], 400)))
 
     def obstacle(self, l):
-        '''
+        """
         makes massive for obstacles
         :param l: number of track parts
-        '''
+        """
         for i in range(l + 3):
             coord_mas.append([self.x[i], self.y[i]])
 
     def coefficient(self, l):
-        '''
+        """
         count coefficients of track lines
         :param l: number of track parts
         :return: coefficients of track lines
-        '''
+        """
         coef1 = []
         coef2 = []
         for i in range(l + 3):
@@ -235,29 +245,29 @@ class Track:
         return coef1, coef2
 
     def coord_x(self):
-        '''
+        """
         :return: horizontal coordinates of track
-        '''
+        """
         return self.x
 
     def coord_y(self):
-        '''
+        """
         :return: vertical coordinates of track
-        '''
+        """
         return self.y
 
 
 class Speeder:
-    '''
-    describes special object under the track, that helps skier to move
-    '''
+    """
+    describes special object under the track, that determines skier's speed
+    """
     def __init__(self, x=50, y=430, l_1=20, l_2=50):
-        '''
+        """
         :param x: first position (horizontal)
         :param y: first position (vertical)
-        :param l_1: lenght
+        :param l_1: length
         :param l_2: height
-        '''
+        """
         self.x = x
         self.y = y
         self.width = l_1
@@ -265,26 +275,30 @@ class Speeder:
         self.speed = 1000
 
     def draw(self):
-        '''
+        """
         drawing speeder (object)
-        '''
+        """
         rect(screen, (255, 255, 255), (int(self.x), self.y, self.width, self.high))
 
     def move(self, dt):
-        '''
+        """
         moving of speeder
         :param dt: time of movement
-        '''
+        """
         self.x += self.speed * dt
 
     def control(self):
-        '''
-        checks position
-        '''
+        """
+        checks position of speeder
+        """
         if self.x >= -self.width + 650 or self.x <= 50:
             self.speed *= -1
 
     def check(self):
+        """
+        determines value of k
+        :return: value of k - speed coefficient
+        """
         if 330 <= self.x <= -self.width + 370:
             return 1.3
         elif 270 <= self.x <= -self.width + 430:
@@ -294,8 +308,16 @@ class Speeder:
 
 
 class Clouds:
-
+    """
+    class that describes clouds - part of background
+    """
     def __init__(self):
+        """
+        x - first horizontal position
+        y - first vertical position
+        l - length
+        w - height
+        """
         self.x = randint(50, 100)
         self.y = randint(1, 100)
         self.l = randint(100, 200)
@@ -303,6 +325,10 @@ class Clouds:
         self.speed = randint(-50, 50)
 
     def checker(self):
+        """
+        makes speed non zero
+        :return: new value of speed
+        """
         if self.speed == 0:
             self.speed = randint(10, 50)
         elif 0 < self.speed < 10:
@@ -311,12 +337,24 @@ class Clouds:
             self.speed = randint(-50, -10)
 
     def draw(self):
+        """
+        draws cloud on screen
+        """
         ellipse(screen, WHITE, (int(self.x), self.y, self.l, self.w))
 
     def move(self, dt):
+        """
+        movement of cloud
+        :param dt: time of moving (dt = 1 / FPS)
+        :return: new horizontal coordinate
+        """
         self.x += self.speed * dt
 
     def control(self):
+        """
+        check collision with the frames
+        :return: new position of cloud
+        """
         if self.x >= 800:
             self.x = 0
         elif self.x <= 0:
@@ -324,53 +362,105 @@ class Clouds:
 
 
 class Boost:
-
+    """
+    class for small helper - booster, that increases speed
+    """
     def __init__(self):
+        """
+        x - horizontal position on screen
+        y - vertical position on the screen
+        r - size
+        """
         self.x = randint(100, 750)
         self.y = 60
         self.r = 5
 
     def checker(self, x):
+        """
+        checks if track coordinates don't matches with coordinate of booster
+        in order to avoid some mistakes
+        :param x: coordinates of track
+        :return: new coordinate of booster
+        """
         for i in range(level + 3):
             if x[i] - 5 <= self.x <= x[i] + 5:
                 self.x += 20
 
     def draw(self):
+        """
+        draws booster on screen
+        """
         circle(screen, (139, 0, 0), (self.x, self.y), self.r)
 
     def coord(self):
+        """
+        :return: coordinate of booster
+        """
         return self.x
 
     def change_y(self, l, x, k, b):
+        '''
+        places booster on track
+        :param l: level (number of track parts)
+        :param x: track coordinates
+        :param k: k coefficient of track lines (track line: y=kx+b)
+        :param b: b coefficient of track lines
+        :return: new vertical booster coordinate
+        '''
         for i in range(l + 3):
             if x[i] <= self.x <= x[i + 1]:
                 self.y = int(k[i] * self.x + b[i] - 5)
 
 
 class Obstacle:
+    """
+    class for object called obstacle, that interferes skier
+    """
     def __init__(self):
+        """
+        height - size
+        x - horizontal coordinate
+        y - vertical coordinate
+        """
         self.height = 10
         self.x = 0
         self.y = 0
 
     def apply_coords(self, mass, i):
+        """
+        determines coordinates of obstacles
+        :param mass: array of track coordinates
+        :param i: number of coordinates in mass
+        :return:
+        """
         self.x = mass[i][0]
         self.y = mass[i][1]
 
     def draw(self):
+        '''
+        draws obstacles on screen
+        '''
         line(screen, (255, 255, 0), (self.x, self.y - self.height), (self.x, self.y), 4)
 
-    # Тут нужны координаты лыжника для проверки на столкновение
     def bang(self, skier_coords_x, skier_coords_y):
+        '''
+        checks collision of skier and obstacle
+        :param skier_coords_x: x coordinates of skier
+        :param skier_coords_y: y coordinates of skier
+        :return: True if skier and obstacle collided otherwise False
+        '''
         if abs(self.x - skier_coords_x) <= 1 and abs(skier_coords_y - self.y + self.height) <= 2:
             return True
         else:
             return False
 
 
-# Функция, которая определяет места, в которые можно поставить препятствия (граница трека)
-# Наверное, можно было использовать track.coord_x()
 def possible_spots(mas):
+    """
+    determines possible places of obstacles
+    :param mas: track coordinates
+    :return: coordinates of obstacles
+    """
     coords = []
     for i in range(len(mas) - 1):
         A = mas[i][1] - mas[i + 1][1]
@@ -385,6 +475,7 @@ def possible_spots(mas):
 
 
 pygame.init()
+
 screen = pygame.display.set_mode((800, 800))
 clock = pygame.time.Clock()
 ski_surface = pygame.Surface((50, 60), pygame.SRCALPHA)  # попытка сделать так, чтобы лыжник поворачивался по склону
