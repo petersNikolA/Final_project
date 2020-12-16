@@ -3,9 +3,6 @@ from pygame.draw import *
 from random import randint
 from shoot import *
 
-"""ski = pygame.image.load(ski1.png)
-skisurf = pygame.Surface((10, 10), pygame.SRCALPHA)"""
-
 
 class Skier:
 
@@ -14,11 +11,12 @@ class Skier:
         self.x = x_0
         self.y = y_0 - self.a
         self.ax = -0.5
-        self.g = 75
-        self.speed_x = 0
+        self.g = 300
+        self.speed_x = 2
         self.speed_y = 0
         self.u = False
         self.f = False
+        self.w = True
 
     def speed(self, k, upfactor):
         if self.speed_x <= 2:
@@ -48,37 +46,52 @@ class Skier:
             self.y += self.speed_y * dt
         elif upfactor:
             self.x -= self.speed_x * dt
-            self.speed_y = -30
+            self.speed_y = -10
             self.y += self.speed_y * dt
-        rect(screen, (255, 255, 255), (int(self.x), int(self.y), self.a, self.a))
+        rect(screen, (255, 0, 0), (int(self.x), int(self.y), self.a, self.a))
 
-    def jump(self, dt):
-        self.speed_y = -7
-        self.y += self.speed_y * dt
-        self.speed_y = 0
-        rect(screen, (255, 255, 255), (int(self.x), int(self.y), self.a, self.a))
+    def jump(self, dt, factor):
+        if factor:
+            self.speed_y = -8
+            self.y += self.speed_y * dt
+            self.x += self.speed_x * dt / (2 * FPS)
+            self.speed_y = 0
+            rect(screen, (255, 255, 255), (int(self.x), int(self.y), self.a, self.a))
 
     def control(self, x, l, k, b):
         for i in range(l + 3):
             if x[i] < self.x <= x[i + 1]:
                 if k[i] >= 0:
                     self.ax = -0.1
+                    self.g = 300
                 else:
                     self.ax = -0.25 * abs(k[i]) * (l // 4)
-                if (self.y + self.a) - k[i] * self.x - b[i] < 0:
+                    self.g = 15
+                if (self.y + self.a) - k[i] * self.x - b[i] < 1:
                     self.u = False
                     self.f = True
-                elif (self.y + self.a) - k[i] * self.x - b[i] > 1:
+                    if (self.y + self.a) - k[i] * self.x - b[i] < -5:
+                        self.w = False
+                    else:
+                        self.w = True
+                elif k[i] >= 0 and (self.y + self.a / 1.2) - k[i] * self.x - b[i] > 0:
                     self.speed_y = 0
                     self.u = True
                     self.f = False
+                    self.w = True
+                elif k[i] < 0 and (self.y + self.a * 2 ** (1 / 2) - k[i] * self.x - b[i] > 0):
+                    self.speed_y = 0
+                    self.u = True
+                    self.f = False
+                    self.w = True
                 else:
                     self.speed_y = 0
                     self.u = False
                     self.f = False
+                    self.w = True
 
     def checker(self):
-        return self.u, self.f
+        return self.u, self.f, self.w
 
     def end(self):
         if self.x + self.a >= 775:
@@ -94,6 +107,10 @@ class Skier:
 
     def text(self):
         return self.speed_x
+
+    def boost_checker(self, m):
+        if m - 0.1 <= self.x <= m + 0.1:
+            self.speed_x += 2.1
 
 
 class Track:
@@ -160,6 +177,55 @@ class Speeder:
             return 0.9
 
 
+class Clouds:
+
+    def __init__(self):
+        self.x = randint(50, 100)
+        self.y = randint(1, 100)
+        self.l = randint(100, 200)
+        self.w = randint(30, 50)
+        self.speed = randint(-50, 50)
+
+    def checker(self):
+        if self.speed == 0:
+            self.speed = randint(10, 50)
+        elif 0 < self.speed < 10:
+            self.speed = randint(10, 50)
+        elif -10 < self.speed < 0:
+            self.speed = randint(-50, -10)
+
+    def draw(self):
+        ellipse(screen, WHITE, (int(self.x), self.y, self.l, self.w))
+
+    def move(self, dt):
+        self.x += self.speed * dt
+
+    def control(self):
+        if self.x >= 800:
+            self.x = 0
+        elif self.x <= 0:
+            self.x = 800
+
+
+class Boost:
+
+    def __init__(self):
+        self.x = randint(100, 750)
+        self.y = 60
+        self.r = 10
+
+    def checker(self, x):
+        for i in range(level + 3):
+            if x[i] - 5 <= self.x <= x[i] + 5:
+                self.x += 20
+
+    def draw(self):
+        circle(screen, (139, 0, 0), (self.x, self.y), self.r)
+
+    def coord(self):
+        return self.x
+
+
 pygame.init()
 screen = pygame.display.set_mode((800, 800))
 clock = pygame.time.Clock()
@@ -172,7 +238,8 @@ T = 2
 fall = False
 up = False
 checker = False
-x = [False, False]
+x = [False, False, True]
+j_factor = x[2]
 p = 0
 track_counter = 0
 r = []
@@ -183,16 +250,23 @@ count = 0
 ammo = 15
 time = 0
 scatter = 2000
-timing = 500
+
+timing = 100
 factor = False
 
 first = pygame.font.Font(None, 50)
-f_text = "Ввод в консоль"
+second = pygame.font.Font(None, 50)
+f_text = "Обратите внимание на консоль"
+s_text = "Ознакомьтесь с правилами"
 ffirst = first.render(f_text, True, WHITE, BLACK)
-screen.blit(ffirst, (50, 100))
+ssecond = second.render(s_text, True, WHITE, BLACK)
+screen.blit(ffirst, (100, 100))
+screen.blit(ssecond, (100, 150))
 pygame.display.update()
-level = int(input("Введите уровень сложности от 1 до 3"))
+print('перед началом игры ознакомтесь с правилами ....')
+level = int(input("Введите уровень сложности от 1 до 3 "))
 level *= 4
+name = str(input("Введите ваше имя. Только латинcкие буквы "))
 
 skier1 = Skier()
 track = Track()
@@ -200,18 +274,24 @@ n = Speeder()
 c_x = track.coord_x()  # набор координат x трассы
 c_y = track.coord_y()  # набор координат y трассы
 k, b = track.coefficient(level)
+cloud1 = Clouds()
+cloud1.checker()
+cloud2 = Clouds()
+cloud2.checker()
+booster = Boost()
 
 text1 = pygame.font.Font(None, 50)
 text3 = pygame.font.Font(None, 50)
 text5 = pygame.font.Font(None, 50)
-rules1 = pygame.font.Font(None, 30)
-rules2 = pygame.font.Font(None, 30)
-rules3 = pygame.font.Font(None, 30)
-rules4 = pygame.font.Font(None, 30)
-rule1 = 'Во время игры при нажатии пробела лыжник ускоряется'
+rules1 = pygame.font.Font(None, 50)
+rules2 = pygame.font.Font(None, 50)
+rules3 = pygame.font.Font(None, 50)
+rules4 = pygame.font.Font(None, 50)
+rule1 = 'Пробел - ускорение лыжника'
 rule2 = 'При нажатии стрелки вверх - прыжок'
 rule3 = 'Для начала игры нажмите tab'
 rule4 = 'Для выхода нажмите esc'
+
 while not finished:
     pygame.display.update()
     rect(screen, BLACK, (0, 0, 800, 800))
@@ -246,24 +326,39 @@ while not finished:
                     finished = True
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_UP:
-                        skier1.jump(T)
+                        j_factor = skier1.jump(T, j_factor)
                     if event.key == pygame.K_SPACE:
                         p = n.check()
                         skier1.speedchecker()
                         skier1.speed(p, up)
+            cloud1.draw()
+            cloud2.draw()
+            cloud1.move(t)
+            cloud2.move(t)
+            cloud1.control()
+            cloud2.control()
+            booster.checker(c_x)
+            booster.draw()
+            b_coord = booster.coord()
             track.draw(level)
             skier1.control(c_x, level, k, b)
             x = skier1.checker()
             skier1.speedchecker()
             up = x[0]
             fall = x[1]
+            j_factor = x[2]
             skier1.forward(t, fall, up)
+            skier1.boost_checker(b_coord)
             checker = skier1.end()
             if checker:
                 r = shooting(finish, time, scatter, ammo, count)
                 timing -= r[1]
                 final += r[0]
                 finish = False
+                cloud1.__init__()
+                cloud1.checker()
+                cloud2.__init__()
+                cloud2.checker()
                 track.__init__()
                 track_counter += 1
                 k, b = track.coefficient(level)
@@ -282,5 +377,11 @@ while not finished:
             screen.blit(text2, (50, 550))
             screen.blit(text4, (50, 600))
             screen.blit(text6, (50, 650))
+            if timing <= 0:
+                final += (track_counter * level * 50)
+                records = open("records.txt", "a")
+                records.write(name + " : " + str(final) + "\n")
+                records.close()
+                finished = True
 
 pygame.quit()
