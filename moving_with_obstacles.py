@@ -4,8 +4,6 @@ from pygame.draw import *
 from random import randint
 from shoot import *
 
-"""ski = pygame.image.load(ski1.png)
-skisurf = pygame.Surface((10, 10), pygame.SRCALPHA)"""
 coord_mas = []
 
 
@@ -165,11 +163,8 @@ class Speeder:
             return 0.9
 
 
-"""def time():
-    pygame.time.get_ticks()"""
-
-
 class Obstacle:
+
     def __init__(self):
         self.height = 20
         self.distance = 0

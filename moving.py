@@ -19,6 +19,12 @@ class Skier:
         self.w = True
 
     def speed(self, k, upfactor):
+        """
+
+        :param k:
+        :param upfactor:
+        :return:
+        """
         if self.speed_x <= 2:
             if k > 0:
                 self.speed_x += 1
@@ -52,9 +58,9 @@ class Skier:
 
     def jump(self, dt, factor):
         if factor:
-            self.speed_y = -8
+            self.speed_y = -16
             self.y += self.speed_y * dt
-            self.x += self.speed_x * dt / (2 * FPS)
+            self.x += self.speed_x * 30 * dt / FPS
             self.speed_y = 0
             rect(screen, (255, 255, 255), (int(self.x), int(self.y), self.a, self.a))
 
@@ -66,7 +72,10 @@ class Skier:
                     self.g = 300
                 else:
                     self.ax = -0.25 * abs(k[i]) * (l // 4)
-                    self.g = 15
+                    if not self.f:
+                        self.g = 25
+                    else:
+                        self.g = 100
                 if (self.y + self.a) - k[i] * self.x - b[i] < 1:
                     self.u = False
                     self.f = True
@@ -103,7 +112,7 @@ class Skier:
 
     def speedchecker(self):
         if self.speed_x <= 0:
-            self.speed_x = 0
+            self.speed_x = 2
 
     def text(self):
         return self.speed_x
@@ -111,6 +120,13 @@ class Skier:
     def boost_checker(self, m):
         if m - 0.1 <= self.x <= m + 0.1:
             self.speed_x += 2.1
+
+    def coords_obstacle(self):
+        return self.x, self.y
+
+    def ob_checker(self, ob_factor):
+        if ob_factor:
+            self.speed_x -= 1
 
 
 class Track:
@@ -131,6 +147,10 @@ class Track:
         for i in range(l + 3):
             polygon(screen, CYAN, ((self.x[i], self.y[i]), (self.x[i + 1], self.y[i + 1]),
                                    (self.x[i + 1], 400), (self.x[i], 400)))
+
+    def obstacle(self, l):
+        for i in range(l + 3):
+            coord_mas.append([self.x[i], self.y[i]])
 
     def coefficient(self, l):
         coef1 = []
@@ -212,7 +232,7 @@ class Boost:
     def __init__(self):
         self.x = randint(100, 750)
         self.y = 60
-        self.r = 10
+        self.r = 5
 
     def checker(self, x):
         for i in range(level + 3):
@@ -224,6 +244,48 @@ class Boost:
 
     def coord(self):
         return self.x
+
+    def change_y(self, l, x, k, b):
+        for i in range(l + 3):
+            if x[i] <= self.x <= x[i + 1]:
+                self.y = int(k[i] * self.x + b[i] - 5)
+
+
+class Obstacle:
+    def __init__(self):
+        self.height = 10
+        self.x = 0
+        self.y = 0
+
+    def apply_coords(self, mass, i):
+        self.x = mass[i][0]
+        self.y = mass[i][1]
+
+    def draw(self):
+        line(screen, (255, 255, 0), (self.x, self.y - self.height), (self.x, self.y), 4)
+
+    # Тут нужны координаты лыжника для проверки на столкновение
+    def bang(self, skier_coords_x, skier_coords_y):
+        if abs(self.x - skier_coords_x) <= 1 and abs(skier_coords_y - self.y + self.height) <= 2:
+            return True
+        else:
+            return False
+
+
+# Функция, которая определяет места, в которые можно поставить препятствия (граница трека)
+# Наверное, можно было использовать track.coord_x()
+def possible_spots(mas):
+    coords = []
+    for i in range(len(mas) - 1):
+        A = mas[i][1] - mas[i + 1][1]
+        B = -mas[i][0] + mas[i + 1][0]
+        C = (mas[i][0] * mas[i + 1][1]) - (mas[i + 1][0] * mas[i][1])
+        for X in range(min(mas[i][0], mas[i + 1][0]), max(mas[i][0], mas[i + 1][0]), 33):
+            for Y in range(min(mas[i][1], mas[i + 1][1]), max(mas[i][1], mas[i + 1][1])):
+                Const = A * X + B * Y + C
+                if (abs(Const) / (math.sqrt(A ** 2 + B ** 2))) < 2:
+                    coords.append([X, Y])
+    return coords
 
 
 pygame.init()
@@ -244,6 +306,11 @@ p = 0
 track_counter = 0
 r = []
 final = 0
+coord_mas = []
+s_coord = []
+s_x = 0
+s_y = 0
+ob = False
 
 finish = False
 count = 0
@@ -270,6 +337,7 @@ name = str(input("Введите ваше имя. Только латинcкие
 
 skier1 = Skier()
 track = Track()
+track.obstacle(level)
 n = Speeder()
 c_x = track.coord_x()  # набор координат x трассы
 c_y = track.coord_y()  # набор координат y трассы
@@ -279,6 +347,15 @@ cloud1.checker()
 cloud2 = Clouds()
 cloud2.checker()
 booster = Boost()
+obstacles = []
+
+for i in range(10):
+    obstacles.append(Obstacle())
+
+coords = random.sample(possible_spots(coord_mas), 10)
+
+for i in obstacles:
+    i.apply_coords(coords, obstacles.index(i))
 
 text1 = pygame.font.Font(None, 50)
 text3 = pygame.font.Font(None, 50)
@@ -338,9 +415,10 @@ while not finished:
             cloud1.control()
             cloud2.control()
             booster.checker(c_x)
+            booster.change_y(level, c_x, k, b)
+            track.draw(level)
             booster.draw()
             b_coord = booster.coord()
-            track.draw(level)
             skier1.control(c_x, level, k, b)
             x = skier1.checker()
             skier1.speedchecker()
@@ -350,6 +428,13 @@ while not finished:
             skier1.forward(t, fall, up)
             skier1.boost_checker(b_coord)
             checker = skier1.end()
+            for i in obstacles:
+                s_x, s_y = skier1.coords_obstacle()
+                i.draw()
+                ob = i.bang(s_x, s_y)
+                skier1.ob_checker(ob)
+                ob = False
+                skier1.speedchecker()
             if checker:
                 r = shooting(finish, time, scatter, ammo, count)
                 timing -= r[1]
@@ -364,6 +449,10 @@ while not finished:
                 k, b = track.coefficient(level)
                 c_x = track.coord_x()
                 c_y = track.coord_y()
+                track.obstacle(level)
+                coords = random.sample(possible_spots(coord_mas), 10)
+                for i in obstacles:
+                    i.apply_coords(coords, obstacles.index(i))
             pygame.display.update()
             screen.fill((0, 0, 0))
             u = skier1.text()
