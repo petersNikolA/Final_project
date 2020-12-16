@@ -5,26 +5,32 @@ from shoot import *
 
 
 class Skier:
-
+    '''
+    class that describes main object - skier and all its movements
+    '''
     def __init__(self, x_0=50, y_0=160):
-        self.a = 10
+        '''
+        :param x_0: horizontal starting position
+        :param y_0: vertical starting position
+        '''
+        self.a = 10  # size
         self.x = x_0
         self.y = y_0 - self.a
-        self.ax = -0.5
-        self.g = 300
-        self.speed_x = 2
-        self.speed_y = 0
-        self.u = False
-        self.f = False
-        self.w = True
+        self.ax = -0.5  # horizontal acceleration
+        self.g = 300  # vertical acceleration
+        self.speed_x = 2  # horizontal speed
+        self.speed_y = 0  # vertical speed
+        self.u = False  # upfactor
+        self.f = False  # fallfactor
+        self.w = True  # jump_factor
 
     def speed(self, k, upfactor):
-        """
-
+        '''
+        determines speed of skier
         :param k:
-        :param upfactor:
-        :return:
-        """
+        :param upfactor: factor whether skier needs to climb the hill
+        :return: speed
+        '''
         if self.speed_x <= 2:
             if k > 0:
                 self.speed_x += 1
@@ -45,6 +51,12 @@ class Skier:
                 self.speed_y *= k
 
     def forward(self, dt, fallfactor, upfactor):
+        '''
+        movement of skier
+        :param dt: time of movement
+        :param fallfactor: factor whether skier needs to go down
+        :param upfactor: factor whether skier needs to climb the hill
+        '''
         self.speed_x += self.ax * dt
         self.x += self.speed_x * dt
         if fallfactor:
@@ -57,6 +69,11 @@ class Skier:
         rect(screen, (255, 0, 0), (int(self.x), int(self.y), self.a, self.a))
 
     def jump(self, dt, factor):
+        '''
+        skier jumping
+        :param dt: time of jumping
+        :param factor: checking if skier has not jumped yet
+        '''
         if factor:
             self.speed_y = -16
             self.y += self.speed_y * dt
@@ -65,6 +82,13 @@ class Skier:
             rect(screen, (255, 255, 255), (int(self.x), int(self.y), self.a, self.a))
 
     def control(self, x, l, k, b):
+        '''
+        makes skier moves along the track
+        :param x: track's horizontal coordinates
+        :param l: number of track parts
+        :param k: coefficient of track's tilt
+        :param b: another track coefficient
+        '''
         for i in range(l + 3):
             if x[i] < self.x <= x[i + 1]:
                 if k[i] >= 0:
@@ -100,9 +124,17 @@ class Skier:
                     self.w = True
 
     def checker(self):
+        '''
+        checks whether skier needs to climb up or go down, or can jump
+        :return: upfactor, fallfactor, jump_factor
+        '''
         return self.u, self.f, self.w
 
     def end(self):
+        '''
+        check if skier has finished part of the track
+        :return: True if skier has finished otherwise False
+        '''
         if self.x + self.a >= 775:
             self.x = 50
             self.y = 150
@@ -111,27 +143,54 @@ class Skier:
             return False
 
     def speedchecker(self):
+        '''
+        limits speed so that skier won't go back
+        :return: new speed value
+        '''
         if self.speed_x <= 0:
             self.speed_x = 2
 
     def text(self):
+        '''
+        :return: skier's speed
+        '''
         return self.speed_x
 
     def boost_checker(self, m):
+        '''
+        checks if skier has riched booster
+        :param m: True if skier had riched otherwise False
+        :return: new speed value
+        '''
         if m - 0.1 <= self.x <= m + 0.1:
             self.speed_x += 2.1
 
     def coords_obstacle(self):
+        '''
+        :return: skier's coordinates
+        '''
         return self.x, self.y
 
     def ob_checker(self, ob_factor):
+        '''
+        checks if skier has collided obstacle
+        :param ob_factor: True if skier had collided obstacle otherwise False
+        :return: new speed value
+        '''
         if ob_factor:
             self.speed_x -= 1
 
 
 class Track:
-
+    '''
+    class that describes the track on which skier moves
+    '''
     def __init__(self, x_0=50, y_0=160):
+        '''
+        randomly generates coordinates of track
+        :param x_0: zero horizontal position
+        :param y_0: zero vertical position
+        '''
         l = level
         self.x = [x_0, x_0 + 50]
         self.y = [y_0, y_0]
@@ -144,15 +203,28 @@ class Track:
         self.y.append(y_0)
 
     def draw(self, l):
+        '''
+        draws track on screen
+        :param l: number of track parts
+        '''
         for i in range(l + 3):
             polygon(screen, CYAN, ((self.x[i], self.y[i]), (self.x[i + 1], self.y[i + 1]),
                                    (self.x[i + 1], 400), (self.x[i], 400)))
 
     def obstacle(self, l):
+        '''
+        makes massive for obstacles
+        :param l: number of track parts
+        '''
         for i in range(l + 3):
             coord_mas.append([self.x[i], self.y[i]])
 
     def coefficient(self, l):
+        '''
+        count coefficients of track lines
+        :param l: number of track parts
+        :return: coefficients of track lines
+        '''
         coef1 = []
         coef2 = []
         for i in range(l + 3):
@@ -163,15 +235,29 @@ class Track:
         return coef1, coef2
 
     def coord_x(self):
+        '''
+        :return: horizontal coordinates of track
+        '''
         return self.x
 
     def coord_y(self):
+        '''
+        :return: vertical coordinates of track
+        '''
         return self.y
 
 
 class Speeder:
-
+    '''
+    describes special object under the track, that helps skier to move
+    '''
     def __init__(self, x=50, y=430, l_1=20, l_2=50):
+        '''
+        :param x: first position (horizontal)
+        :param y: first position (vertical)
+        :param l_1: lenght
+        :param l_2: height
+        '''
         self.x = x
         self.y = y
         self.width = l_1
@@ -179,12 +265,22 @@ class Speeder:
         self.speed = 1000
 
     def draw(self):
+        '''
+        drawing speeder (object)
+        '''
         rect(screen, (255, 255, 255), (int(self.x), self.y, self.width, self.high))
 
     def move(self, dt):
+        '''
+        moving of speeder
+        :param dt: time of movement
+        '''
         self.x += self.speed * dt
 
     def control(self):
+        '''
+        checks position
+        '''
         if self.x >= -self.width + 650 or self.x <= 50:
             self.speed *= -1
 
