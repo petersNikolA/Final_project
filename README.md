@@ -12,8 +12,8 @@ There is no wining or losing in this game, but you can compete with others in am
 
 ## What are the rules?
 
-* Press "space" when the arrow on the "speed-strip" is in the midlle of it. If you miss the center, the velocity will decrease
-* Hitting the obstacle decreases skier's speed (use jump or double-jump to pass through them)
+* Press "space" when the arrow on the "speed-strip" is in the midlle of it. If you miss the center, the velocity will decrease(the further away from the center, the more velocity will decrease)
+* Hitting the obstacle decreases skier's speed (use jump("arrow-up" button) to pass through them)
 * Pick up "boost" to increase your speed
 * While shooting, you should pay attention on wind and dispersion
 * When the time is up - game over!
