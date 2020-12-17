@@ -104,7 +104,7 @@ class Skier:
                     if (self.y + self.a) - k[i] * self.x - b[i] < 10:
                         self.g = 120
                     else:
-                        self.g = 5000
+                        self.g = 2000
                 else:
                     self.ax = -0.25 * abs(k[i]) * (l // 4)
                     if not self.f:
@@ -507,6 +507,7 @@ count = 0
 ammo = 15
 time = 0
 scatter = 2000
+wind = 0
 
 timing = 100
 factor = False
@@ -627,7 +628,7 @@ while not finished:
                 ob = False
                 skier1.speedchecker()
             if checker:
-                r = shooting(finish, time, scatter, ammo, count)
+                r = shooting(finish, time, scatter, ammo, count, wind)
                 timing -= r[1]
                 final += r[0]
                 finish = False
