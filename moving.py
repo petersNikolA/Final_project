@@ -440,18 +440,18 @@ class Obstacle:
         self.y = mass[i][1]
 
     def draw(self):
-        '''
+        """
         draws obstacles on screen
-        '''
+        """
         line(screen, (255, 255, 0), (self.x, self.y - self.height), (self.x, self.y), 4)
 
     def bang(self, skier_coords_x, skier_coords_y):
-        '''
+        """
         checks collision of skier and obstacle
         :param skier_coords_x: x coordinates of skier
         :param skier_coords_y: y coordinates of skier
         :return: True if skier and obstacle collided otherwise False
-        '''
+        """
         if abs(self.x - skier_coords_x) <= 1 and abs(skier_coords_y - self.y + self.height) <= 2:
             return True
         else:
@@ -561,6 +561,7 @@ rule3 = 'Для начала игры нажмите tab'
 rule4 = 'Для выхода нажмите esc'
 
 while not finished:
+    screen.fill((0, 0, 0))
     pygame.display.update()
     rules11 = rules1.render(rule1, True, WHITE, BLACK)
     rules22 = rules2.render(rule2, True, WHITE, BLACK)
