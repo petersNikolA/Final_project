@@ -525,7 +525,7 @@ print('перед началом игры ознакомтесь с правил
 level = int(input("Введите уровень сложности от 1 до 3 "))
 level *= 4
 name = str(input("Введите ваше имя. Только латинcкие буквы "))
-
+screen.fill((0, 0, 0))
 skier1 = Skier()
 track = Track()
 track.obstacle(level)
@@ -561,7 +561,6 @@ rule3 = 'Для начала игры нажмите Tab'
 rule4 = 'Для выхода нажмите Esc'
 
 while not finished:
-    screen.fill((0, 0, 0))
     pygame.display.update()
     rules11 = rules1.render(rule1, True, WHITE, BLACK)
     rules22 = rules2.render(rule2, True, WHITE, BLACK)
