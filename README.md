@@ -3,6 +3,8 @@ MIPT, first course, autumn 2020.
 
 Biatlon game made with python
 
+moving.py - main file of game
+
 ## What is it game about?
 
 The aim of this game is to gain points as much as possible in limited time. The gameplay is divided in two parts: 
