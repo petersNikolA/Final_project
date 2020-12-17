@@ -83,7 +83,7 @@ class Skier:
         :param factor: checking if skier has not jumped yet
         """
         if factor:
-            self.speed_y = -16
+            self.speed_y = -10
             self.y += self.speed_y * dt
             self.x += 2
             self.speed_y = 0
@@ -101,7 +101,10 @@ class Skier:
             if x[i] < self.x <= x[i + 1]:
                 if k[i] >= 0:
                     self.ax = -0.1
-                    self.g = 300
+                    if (self.y + self.a) - k[i] * self.x - b[i] < 10:
+                        self.g = 120
+                    else:
+                        self.g = 5000
                 else:
                     self.ax = -0.25 * abs(k[i]) * (l // 4)
                     if not self.f:
@@ -170,7 +173,7 @@ class Skier:
         :param m: True if skier had riched otherwise False
         :return: new speed value
         """
-        if m - 0.1 <= self.x <= m + 0.1:
+        if m - 0.1 <= self.x + 2 <= m + 0.1:
             self.speed_x += 2.1
 
     def coords_obstacle(self):
@@ -422,7 +425,7 @@ class Obstacle:
         x - horizontal coordinate
         y - vertical coordinate
         """
-        self.height = 10
+        self.height = 8
         self.x = 0
         self.y = 0
 
@@ -558,7 +561,6 @@ rule4 = 'Для выхода нажмите esc'
 
 while not finished:
     pygame.display.update()
-    rect(screen, BLACK, (0, 0, 800, 800))
     rules11 = rules1.render(rule1, True, WHITE, BLACK)
     rules22 = rules2.render(rule2, True, WHITE, BLACK)
     rules33 = rules3.render(rule3, True, WHITE, BLACK)
@@ -590,11 +592,13 @@ while not finished:
                     finished = True
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_UP:
-                        j_factor = skier1.jump(T, j_factor)
-                    if event.key == pygame.K_SPACE:
+                        skier1.jump(T, j_factor)
+                    elif event.key == pygame.K_SPACE:
                         p = n.check()
                         skier1.speedchecker()
                         skier1.speed(p, up)
+                    elif event.key == pygame.K_ESCAPE:
+                        finished = True
             cloud1.draw()
             cloud2.draw()
             cloud1.move(t)
@@ -636,7 +640,11 @@ while not finished:
                 k, b = track.coefficient(level)
                 c_x = track.coord_x()
                 c_y = track.coord_y()
+                coord_mas = []
                 track.obstacle(level)
+                obstacles = []
+                for i in range(10):
+                    obstacles.append(Obstacle())
                 coords = random.sample(possible_spots(coord_mas), 10)
                 for i in obstacles:
                     i.apply_coords(coords, obstacles.index(i))
