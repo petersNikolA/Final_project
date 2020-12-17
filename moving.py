@@ -555,10 +555,10 @@ rules1 = pygame.font.Font(None, 50)
 rules2 = pygame.font.Font(None, 50)
 rules3 = pygame.font.Font(None, 50)
 rules4 = pygame.font.Font(None, 50)
-rule1 = 'Пробел - ускорение лыжника'
+rule1 = 'Space - ускорение лыжника'
 rule2 = 'При нажатии стрелки вверх - прыжок'
-rule3 = 'Для начала игры нажмите tab'
-rule4 = 'Для выхода нажмите esc'
+rule3 = 'Для начала игры нажмите Tab'
+rule4 = 'Для выхода нажмите Esc'
 
 while not finished:
     pygame.display.update()
