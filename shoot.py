@@ -31,10 +31,13 @@ target = pygame.transform.scale(target, (80, 80))
 
 pygame.mouse.set_visible(False)
 
-wind = random.randint(0, 0)
+wind = 0
 
 
-class Ball:
+class Target:
+    """
+    class for target
+    """
     def __init__(self, x, y):
 
         self.r = random.randint(80, 80)
@@ -43,17 +46,26 @@ class Ball:
         self.color = RED
         self.rect = rect
         self.surf = pygame.Surface((2 * self.r, 2 * self.r), pygame.SRCALPHA)
-        self.ballrect = pygame.Surface((2 * self.r, 2 * self.r), pygame.SRCALPHA).get_rect(center=(x, y))
+        self.targrect = pygame.Surface((2 * self.r, 2 * self.r), pygame.SRCALPHA).get_rect(center=(x, y))
 
-    def ball(self):
+    def target(self):
+        """
+        draws the target
+        """
         circle(self.surf, self.color, (self.r, self.r), self.r, 5)
         circle(self.surf, self.color, (self.r, self.r), int(self.r / 1.5), 5)
         circle(self.surf, self.color, (self.r, self.r), int(self.r / 3), 5)
 
-    def show_ball(self):
-        screen.blit(self.surf, self.ballrect)
+    def show_target(self):
+        """
+        shows the target
+        """
+        screen.blit(self.surf, self.targrect)
 
     def shot(self, event):
+        """
+        checks if the shot was successful, returns True/False for shot, points
+        """
         mouse_pos = [event.pos[0] + (wind * (800 - event.pos[1]) / 30 + random.randint(-1 * scatter, scatter) / 100),
                      event.pos[1] + random.randint(-1 * scatter, scatter) / 100]
         distance = math.sqrt((self.x - mouse_pos[0]) ** 2 + (self.y - mouse_pos[1]) ** 2)
@@ -74,28 +86,37 @@ class Ball:
         return shot, points
 
 
-balls = []
+targets = []
 for _ in range(1):
-    new_ball = Ball(350, 150)
-    balls.append(new_ball)
+    new_target = Target(350, 150)
+    targets.append(new_target)
 
 clock = pygame.time.Clock()
 finish = False
 
 
-def shooting(finish, time, scatter, ammo, count):
+def shooting(finish, time, scatter, ammo, count, wind):
+    """
+    Function is exported into moving and launches "shooting" screen
+    :param finish:
+    :param time:
+    :param scatter: defines the amount of scatter
+    :param ammo:
+    :param count: points obtained for shooting
+    :return: returns count and time
+    """
     while not finish:
         screen.fill(BLACK)
-        # BACKGROUND
+        # background
         rect(screen, BLUE, (0, 0, 800, 800))
         rect(screen, CYAN, (0, 200, 800, 800))
         rect(screen, WHITE, (250, 50, 200, 200))
         polygon(screen, RED, ((200, 50), (200, 60), ((200 + wind * 15), 55)))
         polygon(screen, YELLOW, ((200, 70), (200, 80), ((200 + scatter / 10), 75)))
 
-        for i in balls:
-            i.show_ball()
-            i.ball()
+        for i in targets:
+            i.show_target()
+            i.target()
 
         gunsurf = pygame.Surface((500, 500), pygame.SRCALPHA)
         aim = pygame.mouse.get_pos()
@@ -109,17 +130,17 @@ def shooting(finish, time, scatter, ammo, count):
                 if ammo == 0:
                     finish = True
                 else:
-                    for i in balls:
+                    for i in targets:
                         if i.shot(event)[0]:
-                            balls.remove(i)
-                            i = Ball(350, 150)
-                            balls.append(i)
+                            targets.remove(i)
+                            i = Target(350, 150)
+                            targets.append(i)
                             count += i.shot(event)[1]
                     ammo -= 1
                     if scatter < 4000:
                         scatter += 1000
         time += 1
-        # wind += math.cos(time / 30)
+        wind += math.cos(time / 30)
         if scatter > 0:
             scatter -= 20
         font_1 = pygame.font.SysFont('arial', 32, True)
